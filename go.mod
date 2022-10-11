@@ -8,6 +8,8 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/viper v1.13.0
 	github.com/thedevsaddam/govalidator v1.9.10
+	go.uber.org/zap v1.23.0
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/driver/sqlite v1.4.1
 	gorm.io/gorm v1.24.0
@@ -39,6 +41,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
 	golang.org/x/net v0.0.0-20220927171203-f486391704dc // indirect
 	golang.org/x/sys v0.0.0-20220927170352-d9d178bc13c6 // indirect
