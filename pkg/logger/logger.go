@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -98,3 +99,109 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int, compress bool
 		return zapcore.AddSync(lumberJackLogger)
 	}
 }
+
+// Dump调试专用，不会中断程序，会在终端输出warning消息
+func Dump(value interface{}, msg ...string) {
+	valueString := jsonString(value)
+	// 判断第二个参数是否传参msg
+	if len(msg) > 0 {
+		Logger.Warn("Dump", zap.String(msg[0], valueString))
+	} else {
+		Logger.Warn("Dump", zap.String("data", valueString))
+	}
+}
+
+// LogIf当err!=nil时记录error等级日志
+func LogIf(err error) {
+	if err != nil {
+		Logger.Error("Error Occurred:", zap.Error(err))
+	}
+}
+
+// LogWarnIf 当err!=nil时记录warning日志
+func LogWarnIf(err error) {
+	if err != nil {
+		Logger.Warn("Error Occurred:", zap.Error(err))
+	}
+}
+
+// LogInfoIf 当err!=nil 时记录info等级日志
+func LogInfoIf(err error) {
+	if err != nil {
+		Logger.Info("Error Occurred:", zap.Error(err))
+	}
+}
+
+// Debug日志，详尽的程序日志
+func Debug(moduleName string, fields ...zap.Field) {
+	Logger.Debug(moduleName, fields...)
+}
+
+// Info日志
+func Info(moduleName string, fields ...zap.Field) {
+	Logger.Info(moduleName, fields...)
+}
+
+// Warn日志
+func Warn(moduleName string, fields ...zap.Field) {
+	Logger.Warn(moduleName, fields...)
+}
+
+// Error错误日志，不应该中断程序
+func Error(moduleName string, fields ...zap.Field) {
+	Logger.Error(moduleName, fields...)
+}
+
+// Fatal 级别和Error()一样，写完log后调用os.Exit(1)退出程序
+func Fatal(moduleName string, fields ...zap.Field) {
+	Logger.Fatal(moduleName, fields...)
+}
+
+// DebugString记录一条字符串类型的dubug日志
+func DebugString(moduleName, name, msg string) {
+	Logger.Debug(moduleName, zap.String(name, msg))
+}
+func InfoString(moduleName, name, msg string) {
+	Logger.Info(moduleName, zap.String(name, msg))
+}
+func WarnString(moduleName, name, msg string) {
+	Logger.Warn(moduleName, zap.String(name, msg))
+}
+func ErrorString(moduleName, name, msg string) {
+	Logger.Error(moduleName, zap.String(name, msg))
+}
+func FatalString(moduleName, name, msg string) {
+	Logger.Fatal(moduleName, zap.String(name, msg))
+}
+
+// DebugJSON记录对象类型的debug日志，使用json.Marshal进行编码
+func DebugJSON(moduleName, name string, value interface{}) {
+	Logger.Debug(moduleName, zap.String(name, jsonString(value)))
+}
+func InfoJSON(moduleName, name string, value interface{}) {
+	Logger.Info(moduleName, zap.String(name, jsonString(value)))
+}
+func WarnJSON(moduleName, name string, value interface{}) {
+	Logger.Warn(moduleName, zap.String(name, jsonString(value)))
+}
+func ErrorJSON(moduleName, name string, value interface{}) {
+	Logger.Error(moduleName, zap.String(name, jsonString(value)))
+}
+func FatalJSON(moduleName, name string, value interface{}) {
+	Logger.Fatal(moduleName, zap.String(name, jsonString(value)))
+}
+
+func jsonString(value interface{}) string {
+	b, err := json.Marshal(value)
+	if err != nil {
+		Logger.Error("Logger", zap.String("JSON marshal error", err.Error()))
+	}
+	return string(b)
+}
+
+/*
+Dump() —— 调试专用，会以结构化的形式输出到终端。且不会中断程序，使用 warn 等级（会有高亮）；
+LogIf() / LogInfoIf() / LogWarnIf —— 减少我们代码中大量的 if err != nil { ... } 判断；
+DebugString() 是语法糖，方便我们记录字符串类型的日志；
+DebugJSON() 是语法糖，会使用 json.Marshal 记录的值，方便我们记录 struct 类型，以及其他类型的日志
+*/
