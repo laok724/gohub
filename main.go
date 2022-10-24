@@ -30,6 +30,10 @@ func main() {
 	bootstrap.SetupRedis()
 	router := gin.New()
 	bootstrap.SetupRoute(router)
+	/*
+		logger.Dump(captcha.NewCaptcha().VerifyCaptcha("VrouusDVBRRrNjKSbfTk", "606569"), "正确的答案")
+		logger.Dump(captcha.NewCaptcha().VerifyCaptcha("VrouusDVBRRrNjKSbfTk", "000000"), "错误的答案")
+	*/
 	err := router.Run(":" + config.Get("app.port"))
 	if err != nil {
 		fmt.Println(err.Error())

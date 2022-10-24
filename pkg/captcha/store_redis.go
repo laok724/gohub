@@ -1,60 +1,47 @@
 package captcha
 
 import (
-	"sync"
+	"errors"
+	"time"
 
-	"github.com/mojocn/base64Captcha"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
 	"gohub/pkg/redis"
 )
 
-// 处理图片验证码逻辑
-
-type Captcha struct {
-	base64Captcha *base64Captcha.Captcha
+// RedisStore 实现 base64Captcha.Store interface
+type RedisStore struct {
+	RedisClient *redis.RedisClient
+	KeyPrefix   string
 }
 
-// once 确保 internalCaptcha 对象只初始化一次
-var once sync.Once
+// Set 实现 base64Captcha.Store interface 的 Set 方法
+func (s *RedisStore) Set(key string, value string) error {
 
-// internalCaptcha 内部使用的 Captcha 对象
-var internalCaptcha *Captcha
-
-// NewCaptcha 单例模式获取
-func NewCaptcha() {
-	once.Do(func() {
-		// 初始化Captcha对象
-		internalCaptcha = &Captcha{}
-		// 使用全局Redis对象，配置存储key的前缀
-		store := RedisStore{
-			RedisClient: redis.Redis,
-			KeyPrefix:   config.GetString("app.name") + ":captcha:",
-		}
-		// 配置base64Captcha驱动信息
-		driver := base64Captcha.NewDriverDigit(
-			config.GetInt("captcha.height"),
-			config.GetInt("captcha.width"),
-			config.GetInt("captcha.length"),
-			config.GetFloat64("captcha.maxskew"),
-			config.GetInt("captcha.dot-count"),
-		)
-		internalCaptcha.base64Captcha = base64Captcha.NewCaptcha(driver, &store)
-	})
-	return internalCaptcha
-}
-
-// 生成图片验证码
-func (c *Captcha) GenerateCaptcha() (id string, b64s string, err error) {
-	return c.Base64Captcha.Generate()
-}
-
-// VerifyCaptcha 验证验证码是否正确
-func VerifyCaptcha(id string, answer string) (match bool) {
-	if !app.IsProduction() && id == config.GetString("captcha.testing_key") {
-		return true
+	ExpireTime := time.Minute * time.Duration(config.GetInt64("captcha.expire_time"))
+	// 方便本地开发调试
+	if app.IsLocal() {
+		ExpireTime = time.Minute * time.Duration(config.GetInt64("captcha.debug_expire_time"))
 	}
-	// 第三个参数是验证后是否删除，我们选择 false
-	// 这样方便用户多次提交，防止表单提交错误需要多次输入图片验证码
-	return c.Base64Captcha.Verify(id, answer, false)
+
+	if ok := s.RedisClient.Set(s.KeyPrefix+key, value, ExpireTime); !ok {
+		return errors.New("无法存储图片验证码答案")
+	}
+	return nil
+}
+
+// Get 实现 base64Captcha.Store interface 的 Get 方法
+func (s *RedisStore) Get(key string, clear bool) string {
+	key = s.KeyPrefix + key
+	val := s.RedisClient.Get(key)
+	if clear {
+		s.RedisClient.Del(key)
+	}
+	return val
+}
+
+// Verify 实现 base64Captcha.Store interface 的 Verify 方法
+func (s *RedisStore) Verify(key, answer string, clear bool) bool {
+	v := s.Get(key, clear)
+	return v == answer
 }
