@@ -27,6 +27,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	// 初始化DB
 	bootstrap.SetupDB()
+	bootstrap.SetupRedis()
 	router := gin.New()
 	bootstrap.SetupRoute(router)
 	err := router.Run(":" + config.Get("app.port"))
