@@ -20,7 +20,7 @@ type SignupController struct {
 func (sc *SignupController) IsPhoneExist(c *gin.Context) {
 	// 获取请求参数，并做表单验证
 	request := requests.SignupPhoneExistRequest{}
-	if ok := request.Validate(c, &request, request.SignupPhoneExist); !ok {
+	if ok := requests.Validate(c, &request, requests.ValidateSignupPhoneExist); !ok {
 		return
 	}
 
@@ -34,7 +34,7 @@ func (sc *SignupController) IsPhoneExist(c *gin.Context) {
 
 func (sc *SignupController) IsEmailExist(c *gin.Context) {
 	request := requests.SignupEmailExistRequest{}
-	if ok := requests.Validate(c, &request, requests.SignupEmailExistRequest); !ok {
+	if ok := requests.Validate(c, &request, requests.ValidateSignupEmailExist); !ok {
 		return
 	}
 	response.JSON(c, gin.H{
