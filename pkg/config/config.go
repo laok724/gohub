@@ -67,6 +67,7 @@ func loadEnv(envSuffix string) {
 }
 
 // Env读取环境变量，支持默认值
+
 func Env(envName string, defaultValue ...interface{}) interface{} {
 	if len(defaultValue) > 0 {
 		return internalGet(envName, defaultValue[0])
@@ -75,6 +76,7 @@ func Env(envName string, defaultValue ...interface{}) interface{} {
 }
 
 // Add新增配置项
+
 func Add(name string, configFn ConfigFunc) {
 	ConfigFuncs[name] = configFn
 }
