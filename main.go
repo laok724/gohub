@@ -8,7 +8,7 @@ import (
 	"gohub/bootstrap"
 	btsConfig "gohub/config"
 	"gohub/pkg/config"
-	"gohub/pkg/sms"
+	"gohub/pkg/verifycode"
 )
 
 func init() {
@@ -35,10 +35,13 @@ func main() {
 		logger.Dump(captcha.NewCaptcha().VerifyCaptcha("VrouusDVBRRrNjKSbfTk", "606569"), "正确的答案")
 		logger.Dump(captcha.NewCaptcha().VerifyCaptcha("VrouusDVBRRrNjKSbfTk", "000000"), "错误的答案")
 	*/
+	/*测试短信发送
 	sms.NewSMS().Send("13250324304", sms.Message{
 		Template: config.GetString("sms.aliyun.template_code"),
 		Data:     map[string]string{"code": "123456"},
 	})
+	*/
+	verifycode.NewVerifyCode().SendSMS("13250324304")
 	err := router.Run(":" + config.Get("app.port"))
 	if err != nil {
 		fmt.Println(err.Error())
